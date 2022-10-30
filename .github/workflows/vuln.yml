@@ -28,20 +28,17 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Run Trivy vulnerability scanner
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: test
         IMAGE_TAG: test
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./src
-
-    - name: Run Trivy vulnerability scanner
-      run: |
         curl -L https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz | tar xvzf - contrib trivy
         chmod 755 trivy
         mv trivy /usr/local/bin/trivy
-        trivy image --format template --template "@contrib/sarif.tpl" --output trivy-results.sarif $IMAGE_TAG
+        trivy image --format template --template "@contrib/sarif.tpl" --output trivy-results.sarif $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Upload container results to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v1
