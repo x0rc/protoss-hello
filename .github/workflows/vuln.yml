@@ -24,7 +24,7 @@ jobs:
           ECR_REPOSITORY: test
           IMAGE_TAG: test
         run: | 
-           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./src
+           docker build -t 073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2 ./src
             
       - name: Run Trivy vulnerability scanner
         run: |
