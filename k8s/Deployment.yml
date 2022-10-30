@@ -16,8 +16,7 @@ spec:
       containers:
       - name: hello-kubernetes-basic
         image: paulbouwer/hello-kubernetes:1.10
-      imagePullSecrets:
-        - name: regcred
+        imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8080
         resources:
@@ -36,3 +35,5 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+      imagePullSecrets:
+        - name: regcred
