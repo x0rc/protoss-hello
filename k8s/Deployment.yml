@@ -16,7 +16,7 @@ spec:
       containers:
       - name: hello-kubernetes-basic
         image: paulbouwer/hello-kubernetes:1.10
-        imagePullSecrets:
+      imagePullSecrets:
         - name: regcred
         ports:
           - containerPort: 8080
