@@ -17,11 +17,14 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
-          
+ 
       - name: Build image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: test
+          IMAGE_TAG: test
         run: | 
-          docker build -t 073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2 \
-            --file ./src/Dockerfile
+           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./src
             
       - name: Run Trivy vulnerability scanner
         run: |
