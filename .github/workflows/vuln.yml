@@ -14,26 +14,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-      - name: Checkout code
-        uses: actions/checkout@v2
- 
-      - name: Build image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: test
-          IMAGE_TAG: test
-        run: | 
-           docker build -t 073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2 ./src
-            
-      - name: Run Trivy vulnerability scanner
-        run: |
-          curl -L https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz | tar xvzf - contrib trivy
-          chmod 755 trivy
-          mv trivy /usr/local/bin/trivy
-          trivy image --format template --template "@contrib/sarif.tpl" --output trivy-results.sarif 073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Upload container results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: trivy-results.sarif
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: test
+        IMAGE_TAG: test
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./src
+
+    - name: Run Trivy vulnerability scanner
+      run: |
+        curl -L https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz | tar xvzf - contrib trivy
+        chmod 755 trivy
+        mv trivy /usr/local/bin/trivy
+        trivy image --format template --template "@contrib/sarif.tpl" --output trivy-results.sarif $IMAGE_TAG
+
+    - name: Upload container results to GitHub Code Scanning
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: trivy-results.sarif
