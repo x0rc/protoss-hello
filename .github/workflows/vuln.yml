@@ -20,7 +20,7 @@ jobs:
           
       - name: Build image
         run: | 
-          docker build --tag "073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2" \
+          docker build -t 073045235439.dkr.ecr.us-east-1.amazonaws.com/test:v2 \
             --file ./src/Dockerfile
             
       - name: Run Trivy vulnerability scanner
